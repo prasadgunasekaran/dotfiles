@@ -1,0 +1,99 @@
+
+export PYENV_ROOT="$HOME/.pyenv"
+command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
+
+if which pyenv-virtualenv-init > /dev/null; then eval "$(pyenv virtualenv-init -)"; fi
+
+function poetry_login() { 
+    export CODEARTIFACT_AUTH_TOKEN=`aws codeartifact get-authorization-token --domain astrazeneca --domain-owner 221876256474 --query authorizationToken --output text --region eu-west-1 --profile csis_mgmt`
+    export CODEARTIFACT_REPOSITORY_URL=`aws codeartifact get-repository-endpoint --domain astrazeneca --domain-owner 221876256474 --repository cgr --format pypi --query repositoryEndpoint --output text --region eu-west-1 --profile csis_mgmt`
+    poetry config repositories.astrazeneca $CODEARTIFACT_REPOSITORY_URL
+    poetry config http-basic.astrazeneca aws $CODEARTIFACT_AUTH_TOKEN
+}
+
+ 
+
+function cgr_login() {
+    echo "\n------- Profile: MGMT:csis_mgmt -------------"
+    azawsauth -u krgx898 -a CGR-MGMT -p csis_mgmt -r eu-west-1 -rn AWS_AZ_CGR_CP_DEVELOPER
+    sleep 2
+    
+    echo "\n------- Profile: CGR-DEV:csis_dev -------------"
+    azawsauth -u krgx898 -a CGR-DEV -p csis_dev  -r eu-west-1 --mfa -rn AWS_AZ_CGR_CP_DEVELOPER
+    sleep 2
+    
+    echo "\n------- Profile: CGR-PRE:pre_prod -------------"
+    azawsauth -u krgx898 -a CGR-PRE --profile pre_prod -r eu-west-1 -rn AWS_AZ_CGR_CP_DEVOPS
+    sleep 2
+
+    echo "\n------- Profile: CGR-PROD:taf -------------"
+    azawsauth -u krgx898 -a CGR-PROD -p taf -r eu-west-1 -rn AWS_AZ_CGR_CP_DEVOPS
+    sleep 2
+
+    # echo "\n------- Profile: CGR-TEST:csis_test -------------"
+    # azawsauth -u krgx898 -a CGR-TEST -p csis_test -r eu-west-1 -rn AWS_AZ_CGR_CP_DEVELOPER
+
+}
+
+ 
+
+function phenx_login() {
+
+    echo "\n------- Profile: MGMT:phe_mgmt -------------"
+    azawsauth -u krgx898 -a CGR-MGMT -p phe_mgmt -r eu-west-1 -rn AWS_AZ_CGR_PHE_DEVELOPER
+    sleep 2
+
+    echo "\n------- Profile: PHE-DEV:default -------------"
+    azawsauth -u krgx898 -a CGR-DEV -p default  -r eu-west-1 --mfa -rn AWS_AZ_CGR_PHE_DEVELOPER
+    sleep 2
+
+    echo "\n------- Profile: PHE-PRE:phe_pre -------------"
+    azawsauth -u krgx898 -a CGR-PRE --profile phe_pre -r eu-west-1 -rn AWS_AZ_CGR_PHE_DEVOPS
+    sleep 2
+
+    echo "\n------- Profile: PHE-PROD:phe_prod -------------"
+    azawsauth -u krgx898 -a CGR-PROD -p  phe_prod -r eu-west-1 -rn AWS_AZ_CGR_PHE_DEVOPS
+}
+
+
+alias cgrdev="azawsauth -u krgx898 -a CGR-DEV -p csis_dev  -r eu-west-1 --mfa -rn AWS_AZ_CGR_CP_DEVELOPER"
+
+alias cgrtest="azawsauth -u krgx898 -a CGR-TEST -p csis_test  -r eu-west-1 --mfa -rn AWS_AZ_CGR_CP_DEVELOPER"
+
+alias cgrmgmt="azawsauth -u krgx898 -a CGR-MGMT -p csis_mgmt -r eu-west-1 -rn AWS_AZ_CGR_CP_DEVELOPER"
+
+alias cgrpre="azawsauth -u krgx898 -a CGR-PRE --profile pre_prod -r eu-west-1 -rn AWS_AZ_CGR_CP_DEVOPS"
+
+alias cgrprod="azawsauth -u krgx898 -a CGR-PROD -p taf -r eu-west-1 -rn AWS_AZ_CGR_CP_DEVOPS"
+
+ 
+
+alias phedev="azawsauth -u krgx898 -a CGR-DEV -p default  -r eu-west-1 --mfa -rn AWS_AZ_CGR_PHE_DEVELOPER"
+
+alias phemgmt="azawsauth -u krgx898 -a CGR-MGMT -p phe_mgmt -r eu-west-1 -rn AWS_AZ_CGR_PHE_DEVELOPER"
+
+alias phetest="azawsauth -u krgx898 -a CGR-TEST -p phe_test  -r eu-west-1 --mfa -rn AWS_AZ_CGR_PHE_DEVELOPER"
+
+alias phepre="azawsauth -u krgx898 -a CGR-PRE --profile phe_pre -r eu-west-1 -rn AWS_AZ_CGR_PHE_DEVOPS"
+
+alias pheprod="azawsauth -u krgx898 -a CGR-PROD -p phe_prod -r eu-west-1 -rn AWS_AZ_CGR_PHE_DEVOPS"
+
+export PATH="/opt/homebrew/opt/postgresql@12/bin:/Applications/Docker.app/Contents/Resources/bin/:$PATH"
+
+export LDFLAGS="-L/opt/homebrew/opt/postgresql@13/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/postgresql@13/include"
+
+# For pkg-config to find postgresql@13 you may need to set:
+export PKG_CONFIG_PATH="/opt/homebrew/opt/postgresql@13/lib/pkgconfig"
+
+# force the platofrm to x86
+export DOCKER_DEFAULT_PLATFORM="linux/amd64"
+
+alias g="git "
+
+alias awsdev="aws --profile default"
+alias awsmgmt="aws --profile phe_mgmt"
+alias awspre="aws --profile phe_pre"
+alias awsprod="aws --profile phe_prod"
+
